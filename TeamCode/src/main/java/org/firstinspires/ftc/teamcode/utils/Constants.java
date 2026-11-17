@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.utils;
 
 public class Constants {
 
-
     public static final double SHOOTER_TICKS_PER_REV = 28;
     public static final double SHOOTER_RATIO = 1.2;
     public static final double SHOOTER_RPM = SHOOTER_RATIO * SHOOTER_TICKS_PER_REV;
@@ -15,4 +14,7 @@ public class Constants {
 
     public static double SPINUP_TIMEOUT_S      = 3.0;
 
+    public static final double INTAKE_TAKE_RPM = 0;
+    public static final double INTAKE_THROW_RPM = 0;
+    public static int INTAKE_TICKS_PER_REV = 28;
 }
