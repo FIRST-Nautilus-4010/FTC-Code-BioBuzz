@@ -14,6 +14,9 @@ public class Constants {
     public static final double SLOW_SCALE = 0.5;
     public static final double HEADING_TOLERANCE_DEG = 1;
     public static final double POSE_TOLERANCE_IN = 1;
+    public static final double SHOOTER_RPM_CLOSE = 0;
+    public static final double SHOOTER_RPM_FAR = 0;
+    public static final double FEED_TIME_S = 0;
 
     public static double SPINUP_TIMEOUT_S      = 3.0;
 
