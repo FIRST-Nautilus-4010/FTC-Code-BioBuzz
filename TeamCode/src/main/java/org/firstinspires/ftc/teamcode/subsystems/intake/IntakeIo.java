@@ -12,7 +12,7 @@ public class IntakeIo {
     private final DcMotorEx intakeMotor;
 
     public IntakeIo(HardwareMap hardwareMap){
-        this.intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
+        intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
         configureMotor();
     }
 

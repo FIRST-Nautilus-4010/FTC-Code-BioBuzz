@@ -18,7 +18,7 @@ public class ShooterIo {
     private double voltage = 12;
 
     public ShooterIo(HardwareMap hardwareMap){
-        this.shooterMotor = hardwareMap.get(DcMotorEx.class, "shooter");
+        shooterMotor = hardwareMap.get(DcMotorEx.class, "shooter");
         battery = hardwareMap.voltageSensor.iterator().next();
         configureMotor();
     }
