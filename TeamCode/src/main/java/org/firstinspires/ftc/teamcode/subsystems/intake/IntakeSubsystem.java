@@ -11,8 +11,8 @@ import dev.nextftc.robot.Mechanism;
 
 public class IntakeSubsystem implements Mechanism {
 
-    public final IntakeIo io;
-    public IntakeSubsystem(HardwareMap hardwareMap){
+    public IntakeIo io;
+    public void init(HardwareMap hardwareMap){
         io = new IntakeIo(hardwareMap);
     }
 
