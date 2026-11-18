@@ -35,10 +35,10 @@ public class ThreeWheelTuner extends Procedure {
         Inputs.Field<String> leftEncoder = setup.s("Left Encoder Motor Name").withDefault("lf");
         Inputs.Field<String> rightEncoder = setup.s("Right Encoder Motor Name").withDefault("rr");
         Inputs.Field<String> strafeEncoder = setup.s("Strafe Encoder Motor Name").withDefault("lr");
-        Inputs.Field<String> frontLeft = setup.s("Front Left DriveSubsystem Motor Name").withDefault("lf");
-        Inputs.Field<String> backLeft = setup.s("Back Left DriveSubsystem Motor Name").withDefault("lr");
-        Inputs.Field<String> frontRight = setup.s("Front Right DriveSubsystem Motor Name").withDefault("rf");
-        Inputs.Field<String> backRight = setup.s("Back Right DriveSubsystem Motor Name").withDefault("rr");
+        Inputs.Field<String> frontLeft = setup.s("Front Left Drive Motor Name").withDefault("lf");
+        Inputs.Field<String> backLeft = setup.s("Back Left Drive Motor Name").withDefault("lr");
+        Inputs.Field<String> frontRight = setup.s("Front Right Drive Motor Name").withDefault("rf");
+        Inputs.Field<String> backRight = setup.s("Back Right Drive Motor Name").withDefault("rr");
         awaitInputs(setup);
         leftEncoderName = leftEncoder.get();
         rightEncoderName = rightEncoder.get();
