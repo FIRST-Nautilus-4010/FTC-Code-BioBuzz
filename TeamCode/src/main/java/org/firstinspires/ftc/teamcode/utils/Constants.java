@@ -18,10 +18,14 @@ public class Constants {
     public static final double SHOOTER_RPM_FAR = 0;
     public static final double FEED_TIME_S = 0;
     public static final double OVERRIDE_DEADBAND = 0;
+    public static final double ENDGAME_PARK_S = 110;
+    public static final double DRIVER_FORWARD_BLUE_RAD = Math.toRadians(180);
 
     public static double SPINUP_TIMEOUT_S      = 3.0;
 
     public static final double INTAKE_TAKE_RPM = 0;
     public static final double INTAKE_THROW_RPM = 0;
     public static int INTAKE_TICKS_PER_REV = 28;
+    public static final double UNSAFE_ZONE = 4;
+
 }

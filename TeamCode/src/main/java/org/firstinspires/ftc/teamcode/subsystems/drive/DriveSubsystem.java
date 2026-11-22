@@ -10,6 +10,7 @@ import com.pedropathing.ivy.Command;
 import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.utils.Alliance;
 import org.firstinspires.ftc.teamcode.utils.Constants;
 import org.firstinspires.ftc.teamcode.utils.FieldPoses;
 
@@ -31,14 +32,19 @@ public class DriveSubsystem implements Mechanism {
 
     private Pose target = null;
     private Command holdCommand = null;
+    private Alliance alliance = Alliance.BLUE;
 
     public void init (HardwareMap hardwareMap){
         follower = org.firstinspires.ftc.teamcode.pedro.Constants.create(hardwareMap);
-        follower.setPose(FieldPoses.START);
         autoOn = false;
         target = null;
         holdCommand = null;
 
+    }
+
+    public void setAlliance(Alliance alliance, Pose starPose){
+        this.alliance = alliance;
+        follower.setPose(starPose);
     }
 
     @Override
@@ -47,12 +53,17 @@ public class DriveSubsystem implements Mechanism {
 
         if (!autoOn){
             double s = slow ? Constants.SLOW_SCALE : 1.0;
+            double heading = follower.pose().heading() - driverForward();
             DrivePowers  powers  = ManualDrive.fieldCentric(
-                    forward * s, lateral * s, turn * s, follower.pose().heading());
-            follower.manual();
+                    forward * s, lateral * s, turn * s, heading);
+            follower.manual(powers);
 
         }
         follower.update();
+    }
+
+    private double driverForward() {
+        return alliance.mirrorHeading(Constants.DRIVER_FORWARD_BLUE_RAD);
     }
 
     public void setInput(double forward, double lateral, double turn, boolean slow){
@@ -92,7 +103,7 @@ public class DriveSubsystem implements Mechanism {
 
     public void resetHeading() {
         Pose pose = follower.pose();
-        follower.setPose(new Pose(pose.x(), pose.y(), 0));
+        follower.setPose(new Pose(pose.x(), pose.y(), driverForward()));
     }
     private static double wrap(double a) {
         while (a > Math.PI)  a -= 2 * Math.PI;

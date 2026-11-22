@@ -2,12 +2,17 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import static com.pedropathing.ivy.commands.Commands.instant;
 
-import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.pedropathing.math.Pose;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Robot;
-import org.firstinspires.ftc.teamcode.States;
+import org.firstinspires.ftc.teamcode.utils.Alliance;
+import org.firstinspires.ftc.teamcode.utils.EndPoseSave;
+import org.firstinspires.ftc.teamcode.utils.FieldPoses;
+import org.firstinspires.ftc.teamcode.utils.States;
 import org.firstinspires.ftc.teamcode.utils.Constants;
 
+import dev.nextftc.robot.Telemetry;
 import dev.nextftc.robot.opmode.NextOpMode;
 import dev.nextftc.robot.opmode.NextTeleop;
 import dev.nextftc.robot.triggers.CommandGamepad;
@@ -16,15 +21,41 @@ import dev.nextftc.robot.triggers.CommandGamepad;
 public class teleOp extends NextOpMode {
 
     private final Robot robot;
+    private ElapsedTime timer = new ElapsedTime();
+
+    private boolean lockPark = false;
+    private boolean autoParkInit = false;
+    private Alliance alliance;
+    private boolean confirmed;
+    private String warning = "";
 
     public teleOp(Robot robot){
         super(robot);
         this.robot = robot;
-        robot.init(hardwareMap);
+
+        confirmed = EndPoseSave.alliance != null;                       // el Auto ya la declaró
+        alliance = confirmed ? EndPoseSave.alliance : Alliance.BLUE;    // por defecto, mientras nadie elija
+        applyAlliance();
+
+    }
+
+    @Override
+    public void disabledPeriodic() {            // se ve en INIT, antes de PLAY
+        Alliance picked = alliance;
+        if (gamepad1.x) { picked = Alliance.BLUE; confirmed = true; }
+        if (gamepad1.b) { picked = Alliance.RED;  confirmed = true; }
+
+        if (picked != alliance) {
+            alliance = picked;
+            applyAlliance();            // re-ubica la pose de inicio al cambiar
+        }
+        logAlliance();
     }
 
     @Override
     public void start(){
+        timer.reset();
+
         CommandGamepad driver = new CommandGamepad(gamepad1);
 
         driver.a().onTrue(instant(() -> robot.manager.setStates(States.INTAKE)));
@@ -36,6 +67,11 @@ public class teleOp extends NextOpMode {
         driver.leftBumper().onTrue(instant(() -> robot.manager.goShootSequence(true)));
 
         driver.dpadUp().onTrue(instant(robot.drive::resetHeading));
+
+        driver.dpadLeft().multiPress(5,3).onTrue(instant(this::park));
+        driver.dpadRight().multiPress(5, 3).onTrue(instant(() -> lockPark = true));
+
+
 
     }
 
@@ -53,13 +89,47 @@ public class teleOp extends NextOpMode {
 
         boolean slow = gamepad1.left_trigger > 0.5 || robot.manager.isSlowMode();
         robot.drive.setInput(forward,lateral,turn,slow);
+
+        if (!autoParkInit && !lockPark && timer.seconds() > Constants.ENDGAME_PARK_S) {
+            autoParkInit = true;
+            park();
+        }
     }
+
+
 
     @Override
     public void end() {
         robot.manager.setStates(States.STOP);
         robot.shooter.halt();
         if (robot.intake.io != null) robot.intake.io.stop();
+    }
+    private void park(){
+        robot.manager.setStates(States.PARK);
+    }
+    private void applyAlliance() {
+        Pose start = alliance.apply(FieldPoses.START);
+        warning = "";
+
+        Pose stored = EndPoseSave.endPose;
+        Alliance saved = EndPoseSave.alliance;
+        Alliance guess = stored == null ? null : Alliance.fromPose(stored);
+        Alliance expected = saved != null ? saved : guess;
+
+        if (expected != null && expected != alliance) {
+            warning = "El Auto era " + expected + " pero elegiste " + alliance;
+        } else if (stored != null) {
+            start = stored;
+        }
+
+        if (!confirmed) warning = "ALIANZA SIN CONFIRMAR: X = azul, B = roja";
+
+        robot.setAlliance(alliance, start);
+    }
+
+    private void logAlliance() {
+        Telemetry.log("Alliance", alliance + (confirmed ? "" : " (sin confirmar)"));
+        Telemetry.log("⚠", warning.isEmpty() ? "OK" : warning);
     }
 
 }

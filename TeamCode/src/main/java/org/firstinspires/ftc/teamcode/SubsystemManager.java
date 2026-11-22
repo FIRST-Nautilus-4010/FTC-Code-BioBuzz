@@ -5,8 +5,10 @@ import com.pedropathing.ivy.Command;
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.intake.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterSubsystem;
+import org.firstinspires.ftc.teamcode.utils.Alliance;
 import org.firstinspires.ftc.teamcode.utils.Constants;
 import org.firstinspires.ftc.teamcode.utils.FieldPoses;
+import org.firstinspires.ftc.teamcode.utils.States;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -22,13 +24,16 @@ public class SubsystemManager {
     private long stateStartNanos = 0;
     private double shotRpm = Constants.SHOOTER_RPM_CLOSE;
 
+    private Alliance alliance = Alliance.BLUE;
+
     public SubsystemManager(DriveSubsystem drive, IntakeSubsystem intake, ShooterSubsystem shooter) {
         this.drive = drive;
         this.intake = intake;
         this.shooter = shooter;
     }
 
-    public void reset() {
+    public void reset(Alliance alliance) {
+        this.alliance = alliance;
         statesQueue.clear();
         cachedState = null;
     }
@@ -86,10 +91,12 @@ public class SubsystemManager {
                 return intake.outTake();
             case GO_SHOOT_CLOSE:
                 shooter.setTargetRpm(shotRpm);
-                return drive.goTo(FieldPoses.SHOOT_CLOSE);
+                return drive.goTo(alliance.apply(FieldPoses.SHOOT_CLOSE));
             case GO_SHOOT_FAR:
                 shooter.setTargetRpm(shotRpm);
-                return drive.goTo(FieldPoses.SHOOT_FAR);
+                return drive.goTo(alliance.apply(FieldPoses.SHOOT_FAR));
+            case PARK:
+                return drive.goTo(alliance.apply(FieldPoses.PARK));
             case SPINUP:
                 return shooter.shoot(shotRpm);
             case SHOOT:
@@ -107,6 +114,7 @@ public class SubsystemManager {
         switch (state){
             case GO_SHOOT_CLOSE:
             case GO_SHOOT_FAR:
+            case PARK:
                 return drive.atTarget();
             case SPINUP:
                 return shooter.isReady() || stateSeconds() > Constants.SPINUP_TIMEOUT_S;
@@ -128,7 +136,7 @@ public class SubsystemManager {
 
     public boolean isDrivingToPose() {
         States s = statesQueue.peek();
-        return s == States.GO_SHOOT_CLOSE || s == States.GO_SHOOT_FAR;
+        return s == States.GO_SHOOT_CLOSE || s == States.GO_SHOOT_FAR || s == States.PARK;
     }
 
     public String getCurrentState() {

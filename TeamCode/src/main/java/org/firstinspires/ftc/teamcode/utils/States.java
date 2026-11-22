@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.utils;
 
 public enum States {
     TRAVEL,
@@ -8,5 +8,6 @@ public enum States {
     GO_SHOOT_FAR,
     SPINUP,
     SHOOT,
+    PARK,
     STOP
 }

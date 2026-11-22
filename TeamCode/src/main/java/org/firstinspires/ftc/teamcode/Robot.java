@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.intake.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterSubsystem;
+import org.firstinspires.ftc.teamcode.utils.Alliance;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -21,11 +23,18 @@ public class Robot implements NextRobot {
     public final ShooterSubsystem shooter = new ShooterSubsystem();
     public final SubsystemManager manager = new SubsystemManager(drive, intake, shooter);
 
+    public Alliance alliance = Alliance.BLUE;
+
     public void init(HardwareMap hardwareMap){
-        drive.init(hardwareMap);
         intake.init(hardwareMap);
         shooter.init(hardwareMap);
-        manager.reset();
+        manager.reset(alliance);
+    }
+
+    public void setAlliance(Alliance alliance, Pose startPose){
+        this.alliance = alliance;
+        drive.setAlliance(alliance,startPose);
+        manager.reset(alliance);
     }
     @Override
     public Set<Mechanism> getMechanisms() {
@@ -41,6 +50,7 @@ public class Robot implements NextRobot {
                 shooter.getRpm(), shooter.getTargetRpm(), shooter.isReady()));
         Telemetry.log("Pose", String.format("x=%.1f y=%.1f h=%.0f°",
                 drive.getPose().x(), drive.getPose().y(), Math.toDegrees(drive.getPose().heading())));
+        Telemetry.log("Alliance", alliance);
 
     }
 }
