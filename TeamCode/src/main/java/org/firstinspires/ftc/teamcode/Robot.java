@@ -40,7 +40,7 @@ public class Robot implements NextRobot {
     }
     @Override
     public Set<Mechanism> getMechanisms() {
-        return new HashSet<>(Arrays.asList(drive, intake, shooter));
+        return mechanisms;
     }
 
     @Override

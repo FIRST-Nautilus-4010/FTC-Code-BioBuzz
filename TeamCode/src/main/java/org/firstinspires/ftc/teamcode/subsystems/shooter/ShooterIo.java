@@ -14,7 +14,6 @@ public class ShooterIo {
 
     private final VoltageSensor battery;
     private long lastReadMs = 0;
-
     private double voltage = 12;
 
     public ShooterIo(HardwareMap hardwareMap){
@@ -22,12 +21,17 @@ public class ShooterIo {
         battery = hardwareMap.voltageSensor.iterator().next();
         configureMotor();
     }
+
+    public double getTicksPerSecond(){ return shooterMotor.getVelocity(); }
+
+    /** rpm del flywheel = ticks/s * 60 / (ticksPorVuelta * relación). Se calcula aquí para que sea editable en vivo. */
     public double getRpm(){
-        return shooterMotor.getVelocity() * (60 / Constants.SHOOTER_RPM);
+        return getTicksPerSecond() * 60.0 / (Constants.SHOOTER_TICKS_PER_REV * Constants.SHOOTER_RATIO);
     }
 
+    /** Aplica "voltage" volts reales (compensado por la batería). */
     public void setVoltage(double voltage){
-        shooterMotor.setPower(Math.max(0,Math.min(1,voltage / getBatteryVoltage())));
+        shooterMotor.setPower(Math.max(0, Math.min(1, voltage / getBatteryVoltage())));
     }
 
     public double getBatteryVoltage(){
@@ -45,10 +49,9 @@ public class ShooterIo {
     }
 
     public void configureMotor(){
-        shooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooterMotor.setDirection(Constants.SHOOTER_REVERSED
+                ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
         shooterMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         shooterMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
-
-
 }

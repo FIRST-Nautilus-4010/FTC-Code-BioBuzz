@@ -13,7 +13,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.utils.Alliance;
 import org.firstinspires.ftc.teamcode.utils.Constants;
-import org.firstinspires.ftc.teamcode.utils.FieldPoses;
 
 import dev.nextftc.robot.Mechanism;
 

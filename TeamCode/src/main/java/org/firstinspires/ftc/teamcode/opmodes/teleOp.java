@@ -84,7 +84,7 @@ public class teleOp extends NextOpMode {
 
         boolean sticksMoved = Math.abs(forward) + Math.abs(lateral) + Math.abs(turn) > Constants.OVERRIDE_DEADBAND;
         if (sticksMoved && robot.drive.isAutoOn()){
-            robot.manager.driverOverride();
+            robot.manager.driverOverride();   // cancela la secuencia (antes solo soltaba el chasis)
         }
 
         boolean slow = gamepad1.left_trigger > 0.5 || robot.manager.isSlowMode();
@@ -94,6 +94,8 @@ public class teleOp extends NextOpMode {
             autoParkInit = true;
             park();
         }
+
+        logAlliance();
     }
 
 
@@ -103,6 +105,7 @@ public class teleOp extends NextOpMode {
         robot.manager.setStates(States.STOP);
         robot.shooter.halt();
         if (robot.intake.io != null) robot.intake.io.stop();
+        EndPoseSave.clear();   // evita usar una pose/alianza vieja en el siguiente partido (quítalo si quieres poder reiniciar a medio partido)
     }
     private void park(){
         robot.manager.setStates(States.PARK);
@@ -112,14 +115,14 @@ public class teleOp extends NextOpMode {
         String mismatch = "";
 
         Pose stored = EndPoseSave.endPose;
-        Alliance saved = EndPoseSave.alliance;
-        Alliance guess = stored == null ? null : Alliance.fromPose(stored);
-        Alliance expected = saved != null ? saved : guess;
+        Alliance saved = EndPoseSave.alliance;                                  // lo que declaró el Auto
+        Alliance guess = stored == null ? null : Alliance.fromPose(stored);     // lo que dice la coordenada
+        Alliance expected = saved != null ? saved : guess;                      // la declarada manda
 
         if (expected != null && expected != alliance) {
             mismatch = "El Auto era " + expected + " pero elegiste " + alliance;
         } else if (stored != null) {
-            start = stored;
+            start = stored;                                                     // continuar donde terminó el Auto
         }
 
         warning = confirmed

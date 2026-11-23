@@ -62,7 +62,7 @@ public class SubsystemManager {
     public void goShootSequence(boolean far){
         shotRpm = far ? Constants.SHOOTER_RPM_FAR : Constants.SHOOTER_RPM_CLOSE;
         setStates(far ? States.GO_SHOOT_FAR : States.GO_SHOOT_CLOSE);
-        drivenSequence = true;                 // después de setStates, que lo pone en false
+        drivenSequence = true;
         scheduleState(States.SPINUP);
         scheduleState(States.SHOOT);
         scheduleState(States.STOP);
@@ -73,7 +73,7 @@ public class SubsystemManager {
 
     public void driverOverride(){
         drive.releaseControl();
-        if (drivenSequence || isDrivingToPose()){   // isDrivingToPose cubre también PARK
+        if (drivenSequence || isDrivingToPose()){
             shooter.halt();
             intake.stop().schedule();
             setStates(States.TRAVEL);
