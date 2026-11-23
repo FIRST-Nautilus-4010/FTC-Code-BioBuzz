@@ -20,6 +20,7 @@ public class ShooterSubsystem implements Mechanism {
 
     public void init(HardwareMap hardwareMap) {
         io = new ShooterIo(hardwareMap);
+        rpm = 0;
         halt();
     }
 
@@ -29,7 +30,13 @@ public class ShooterSubsystem implements Mechanism {
 
         rpm += Constants.SHOOTER_FILTER_ALPHA * (io.getRpm() - rpm);
 
-        if (targetRpm <= 0) { io.stop(); return; }
+        if (targetRpm <= 0) {
+            integral = 0;
+            lastNanos = 0;
+            inToleranceSinceMs = -1;
+            io.stop();
+            return;
+        }
 
         double error = targetRpm - rpm;
 

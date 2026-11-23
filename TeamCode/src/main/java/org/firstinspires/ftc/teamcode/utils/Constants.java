@@ -20,6 +20,7 @@ public class Constants {
     public static final double OVERRIDE_DEADBAND = 0;
     public static final double ENDGAME_PARK_S = 110;
     public static final double DRIVER_FORWARD_BLUE_RAD = Math.toRadians(180);
+    public static final double DRIVE_TIMEOUT_S = 4;
 
     public static double SPINUP_TIMEOUT_S      = 3.0;
 

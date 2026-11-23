@@ -23,6 +23,7 @@ public class SubsystemManager {
     private States cachedState = null;
     private long stateStartNanos = 0;
     private double shotRpm = Constants.SHOOTER_RPM_CLOSE;
+    private boolean drivenSequence = false;
 
     private Alliance alliance = Alliance.BLUE;
 
@@ -47,6 +48,8 @@ public class SubsystemManager {
         if (state == null) return;
         statesQueue.clear();
         statesQueue.add(state);
+        cachedState = null;
+        drivenSequence = false;
     }
 
     public void shootSequence(double rpm){
@@ -59,9 +62,22 @@ public class SubsystemManager {
     public void goShootSequence(boolean far){
         shotRpm = far ? Constants.SHOOTER_RPM_FAR : Constants.SHOOTER_RPM_CLOSE;
         setStates(far ? States.GO_SHOOT_FAR : States.GO_SHOOT_CLOSE);
+        drivenSequence = true;                 // después de setStates, que lo pone en false
         scheduleState(States.SPINUP);
         scheduleState(States.SHOOT);
         scheduleState(States.STOP);
+    }
+    public void park(){
+        setStates(States.PARK);
+    }
+
+    public void driverOverride(){
+        drive.releaseControl();
+        if (drivenSequence || isDrivingToPose()){   // isDrivingToPose cubre también PARK
+            shooter.halt();
+            intake.stop().schedule();
+            setStates(States.TRAVEL);
+        }
     }
 
     public void periodic() {
@@ -91,12 +107,15 @@ public class SubsystemManager {
                 return intake.outTake();
             case GO_SHOOT_CLOSE:
                 shooter.setTargetRpm(shotRpm);
-                return drive.goTo(alliance.apply(FieldPoses.SHOOT_CLOSE));
+                drive.setTarget(alliance.apply(FieldPoses.SHOOT_CLOSE));
+                return null;
             case GO_SHOOT_FAR:
                 shooter.setTargetRpm(shotRpm);
-                return drive.goTo(alliance.apply(FieldPoses.SHOOT_FAR));
+                drive.setTarget(alliance.apply(FieldPoses.SHOOT_FAR));
+                return null;
             case PARK:
-                return drive.goTo(alliance.apply(FieldPoses.PARK));
+                drive.setTarget(alliance.apply(FieldPoses.PARK));
+                return null;
             case SPINUP:
                 return shooter.shoot(shotRpm);
             case SHOOT:
@@ -115,7 +134,7 @@ public class SubsystemManager {
             case GO_SHOOT_CLOSE:
             case GO_SHOOT_FAR:
             case PARK:
-                return drive.atTarget();
+                return drive.atTarget() || stateSeconds() > Constants.DRIVE_TIMEOUT_S;
             case SPINUP:
                 return shooter.isReady() || stateSeconds() > Constants.SPINUP_TIMEOUT_S;
             case SHOOT:

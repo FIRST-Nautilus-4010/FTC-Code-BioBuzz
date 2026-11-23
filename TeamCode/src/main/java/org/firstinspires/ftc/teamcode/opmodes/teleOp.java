@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.utils.States;
 import org.firstinspires.ftc.teamcode.utils.Constants;
 
 import dev.nextftc.robot.Telemetry;
+import dev.nextftc.robot.opmode.BulkReadHook;
 import dev.nextftc.robot.opmode.NextOpMode;
 import dev.nextftc.robot.opmode.NextTeleop;
 import dev.nextftc.robot.triggers.CommandGamepad;
@@ -30,24 +31,24 @@ public class teleOp extends NextOpMode {
     private String warning = "";
 
     public teleOp(Robot robot){
-        super(robot);
+        super(robot, BulkReadHook.INSTANCE);
         this.robot = robot;
-
-        confirmed = EndPoseSave.alliance != null;                       // el Auto ya la declaró
-        alliance = confirmed ? EndPoseSave.alliance : Alliance.BLUE;    // por defecto, mientras nadie elija
+        robot.init(hardwareMap);
+        confirmed = EndPoseSave.alliance != null;
+        alliance = confirmed ? EndPoseSave.alliance : Alliance.BLUE;
         applyAlliance();
-
     }
 
     @Override
-    public void disabledPeriodic() {            // se ve en INIT, antes de PLAY
+    public void disabledPeriodic() {
+        boolean wasConfirmed = confirmed;
         Alliance picked = alliance;
         if (gamepad1.x) { picked = Alliance.BLUE; confirmed = true; }
         if (gamepad1.b) { picked = Alliance.RED;  confirmed = true; }
 
-        if (picked != alliance) {
+        if (picked != alliance || confirmed != wasConfirmed) {
             alliance = picked;
-            applyAlliance();            // re-ubica la pose de inicio al cambiar
+            applyAlliance();
         }
         logAlliance();
     }
@@ -83,8 +84,7 @@ public class teleOp extends NextOpMode {
 
         boolean sticksMoved = Math.abs(forward) + Math.abs(lateral) + Math.abs(turn) > Constants.OVERRIDE_DEADBAND;
         if (sticksMoved && robot.drive.isAutoOn()){
-            robot.drive.releaseControl();
-            if (robot.manager.isDrivingToPose()) robot.manager.setStates(States.TRAVEL);
+            robot.manager.driverOverride();
         }
 
         boolean slow = gamepad1.left_trigger > 0.5 || robot.manager.isSlowMode();
@@ -109,7 +109,7 @@ public class teleOp extends NextOpMode {
     }
     private void applyAlliance() {
         Pose start = alliance.apply(FieldPoses.START);
-        warning = "";
+        String mismatch = "";
 
         Pose stored = EndPoseSave.endPose;
         Alliance saved = EndPoseSave.alliance;
@@ -117,12 +117,14 @@ public class teleOp extends NextOpMode {
         Alliance expected = saved != null ? saved : guess;
 
         if (expected != null && expected != alliance) {
-            warning = "El Auto era " + expected + " pero elegiste " + alliance;
+            mismatch = "El Auto era " + expected + " pero elegiste " + alliance;
         } else if (stored != null) {
             start = stored;
         }
 
-        if (!confirmed) warning = "ALIANZA SIN CONFIRMAR: X = azul, B = roja";
+        warning = confirmed
+                ? mismatch
+                : "ALIANZA SIN CONFIRMAR: X = azul, B = roja" + (mismatch.isEmpty() ? "" : " | " + mismatch);
 
         robot.setAlliance(alliance, start);
     }

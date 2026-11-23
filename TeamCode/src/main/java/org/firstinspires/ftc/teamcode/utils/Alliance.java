@@ -2,31 +2,32 @@ package org.firstinspires.ftc.teamcode.utils;
 
 import static org.firstinspires.ftc.teamcode.utils.Constants.UNSAFE_ZONE;
 
+import com.pedropathing.api.PoseFactory;
 import com.pedropathing.math.Pose;
 import com.pedropathing.utils.Angle;
 
 public enum Alliance {
+    RED, BLUE;
 
-    RED,
-    BLUE;
-
+    public static final double FIELD_SIZE = 141.5;
+    private static final double CENTER = FIELD_SIZE / 2;
     public boolean isRed() { return this == RED; }
 
     public Pose apply(Pose bluePose) {
         if (!isRed()) return bluePose;
-        return new Pose(144 - bluePose.x(), bluePose.y(), mirrorHeading(bluePose.heading()));
+        return new Pose(
+                FIELD_SIZE - bluePose.x(),
+                FIELD_SIZE - bluePose.y(),
+                rotateHeading(bluePose.heading()));
     }
 
-    public double mirrorHeading(double blueHeading) {
-        return isRed() ? Angle.normalizeSigned(Math.PI - blueHeading) : blueHeading;
+    public double rotateHeading(double blueHeading) {
+        return isRed() ? Angle.normalizeSigned(blueHeading + Math.PI) : blueHeading;
     }
 
     public static Alliance fromPose(Pose pose) {
-        double half = 144 / 2;
-        if (Math.abs(pose.x() - half) < UNSAFE_ZONE) return null;
-        boolean sameSideAsBlueStart = (pose.x() - half) * (FieldPoses.START.x() - half) > 0;
-        return sameSideAsBlueStart ? BLUE : RED;
+        double dx = pose.x() - CENTER;
+        if (Math.abs(dx) < Constants.UNSAFE_ZONE) return null;
+        return dx > 0 ? BLUE : RED;
     }
-
-
 }

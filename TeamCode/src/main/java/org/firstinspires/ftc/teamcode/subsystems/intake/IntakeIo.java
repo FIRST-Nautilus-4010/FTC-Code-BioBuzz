@@ -22,7 +22,7 @@ public class IntakeIo {
     public void stop() { intakeMotor.setPower(0); }
 
     public double getRpm(){
-        return intakeMotor.getVelocity() / Constants.INTAKE_TICKS_PER_REV;
+        return intakeMotor.getVelocity() / Constants.INTAKE_TICKS_PER_REV * 60;
     }
 
     public double getPosition(){
